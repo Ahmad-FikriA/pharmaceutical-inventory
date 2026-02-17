@@ -9,6 +9,8 @@ const SAMPLE_DRUGS: Drug[] = [
     pengeluaran: 30,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    satuan: 'Strip',
+    harga: 5000,
   },
   {
     id: '2',
@@ -18,6 +20,8 @@ const SAMPLE_DRUGS: Drug[] = [
     pengeluaran: 60,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    satuan: 'Strip',
+    harga: 8000,
   },
   {
     id: '3',
@@ -27,6 +31,8 @@ const SAMPLE_DRUGS: Drug[] = [
     pengeluaran: 80,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    satuan: 'Botol',
+    harga: 15000,
   },
   {
     id: '4',
@@ -36,6 +42,8 @@ const SAMPLE_DRUGS: Drug[] = [
     pengeluaran: 45,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    satuan: 'Strip',
+    harga: 3000,
   },
   {
     id: '5',
@@ -45,6 +53,8 @@ const SAMPLE_DRUGS: Drug[] = [
     pengeluaran: 55,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    satuan: 'Botol',
+    harga: 12000,
   },
 ];
 
@@ -52,6 +62,7 @@ export const initialState: AppState = {
   drugs: [],
   transactions: [],
   toasts: [],
+  recapNotes: {},
 };
 
 export function appReducer(state: AppState, action: AppAction): AppState {
@@ -61,6 +72,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         drugs: action.payload.drugs.length > 0 ? action.payload.drugs : SAMPLE_DRUGS,
         transactions: action.payload.transactions,
+        recapNotes: action.payload.recapNotes || {},
       };
 
     case 'ADD_DRUG':
@@ -147,6 +159,15 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         toasts: state.toasts.filter((toast) => toast.id !== action.payload),
+      };
+
+    case 'UPDATE_RECAP_NOTE':
+      return {
+        ...state,
+        recapNotes: {
+          ...state.recapNotes,
+          [action.payload.key]: action.payload.note,
+        },
       };
 
     default:

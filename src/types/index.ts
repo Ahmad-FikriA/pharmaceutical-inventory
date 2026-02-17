@@ -70,14 +70,16 @@ export interface AppState {
   drugs: Drug[];
   transactions: Transaction[];
   toasts: Toast[];
+  recapNotes: Record<string, string>; // key: drugId-month-year
 }
 
 export type AppAction =
-  | { type: 'LOAD_DATA'; payload: { drugs: Drug[]; transactions: Transaction[] } }
+  | { type: 'LOAD_DATA'; payload: { drugs: Drug[]; transactions: Transaction[]; recapNotes?: Record<string, string> } }
   | { type: 'ADD_DRUG'; payload: Drug }
   | { type: 'UPDATE_DRUG'; payload: Drug }
   | { type: 'DELETE_DRUG'; payload: string }
   | { type: 'ADD_TRANSACTION'; payload: Transaction }
   | { type: 'DELETE_TRANSACTION'; payload: string }
   | { type: 'ADD_TOAST'; payload: Toast }
-  | { type: 'REMOVE_TOAST'; payload: string };
+  | { type: 'REMOVE_TOAST'; payload: string }
+  | { type: 'UPDATE_RECAP_NOTE'; payload: { key: string; note: string } };

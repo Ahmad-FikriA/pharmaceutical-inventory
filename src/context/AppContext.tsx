@@ -25,6 +25,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           payload: {
             drugs: parsed.drugs || [],
             transactions: parsed.transactions || [],
+            recapNotes: parsed.recapNotes || {},
           },
         });
       } catch (e) {
@@ -50,6 +51,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         JSON.stringify({
           drugs: state.drugs,
           transactions: state.transactions,
+          recapNotes: state.recapNotes,
         })
       );
     }

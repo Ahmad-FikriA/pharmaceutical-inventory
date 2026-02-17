@@ -14,7 +14,7 @@ import { endOfMonth, isWithinInterval, parseISO, isBefore } from 'date-fns';
 import * as XLSX from 'xlsx';
 
 export default function Rekap() {
-  const { state } = useApp();
+  const { state, dispatch } = useApp();
 
   // Default to current month and year
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth().toString());
@@ -82,6 +82,10 @@ export default function Rekap() {
       const availableStock = monthlyInitialStock + monthlyIncoming;
       const finalStock = availableStock - monthlyOutgoing;
 
+      // Stok optimum = Pengeluaran * 1.2
+      // If pengeluaran is 0, default to 20 (based on low stock threshold of 10 * 2)
+      const stokOptimum = Math.ceil(monthlyOutgoing * 1.2) || 20;
+
       return {
         id: drug.id,
         namaBarang: drug.namaBarang,
@@ -90,10 +94,12 @@ export default function Rekap() {
         jumlahPersediaan: availableStock,
         pengeluaran: monthlyOutgoing,
         stokAkhir: finalStock,
+        stokOptimum,
+        catatan: state.recapNotes?.[`${drug.id}-${selectedMonth}-${selectedYear}`] || '',
         totalNilai: finalStock * (drug.harga || 0)
       };
     });
-  }, [state.drugs, state.transactions, selectedMonth, selectedYear]);
+  }, [state.drugs, state.transactions, selectedMonth, selectedYear, state.recapNotes]);
 
   const exportToExcel = () => {
     const dataToExport = recapData.map((item, index) => ({
@@ -104,6 +110,8 @@ export default function Rekap() {
       'Jumlah Persediaan': item.jumlahPersediaan,
       'Pengeluaran': item.pengeluaran,
       'Stok Akhir': item.stokAkhir,
+      'Stok Optimum': item.stokOptimum,
+      'Catatan': item.catatan,
       'Total Nilai': item.totalNilai
     }));
 
@@ -121,11 +129,23 @@ export default function Rekap() {
       { wch: 15 }, // Jumlah Persediaan
       { wch: 10 }, // Pengeluaran
       { wch: 10 }, // Stok Akhir
+      { wch: 10 }, // Stok Optimum
+      { wch: 30 }, // Catatan
       { wch: 15 }, // Total Nilai
     ];
 
     const fileName = `Rekap_Stok_${months[parseInt(selectedMonth)].label}_${selectedYear}.xlsx`;
     XLSX.writeFile(wb, fileName);
+  };
+
+  const handleNoteChange = (drugId: string, note: string) => {
+    dispatch({
+      type: 'UPDATE_RECAP_NOTE',
+      payload: {
+        key: `${drugId}-${selectedMonth}-${selectedYear}`,
+        note
+      }
+    });
   };
 
   return (
@@ -185,6 +205,8 @@ export default function Rekap() {
                   <th className="px-6 py-3 text-center font-bold">Jumlah Persediaan</th>
                   <th className="px-6 py-3 text-center text-red-600">Pengeluaran</th>
                   <th className="px-6 py-3 text-center font-bold">Stok Akhir</th>
+                  <th className="px-6 py-3 text-center text-blue-600">Stok Optimum</th>
+                  <th className="px-6 py-3 text-center">Catatan</th>
                   <th className="px-6 py-3 text-center font-bold">Total Nilai</th>
                 </tr>
               </thead>
@@ -225,6 +247,18 @@ export default function Rekap() {
                         {item.stokAkhir === 0 && (
                           <XCircle className="inline-block w-4 h-4 ml-1 text-red-500" />
                         )}
+                      </td>
+                      <td className="px-6 py-3 text-center font-medium text-blue-600 bg-blue-50">
+                        {item.stokOptimum}
+                      </td>
+                      <td className="px-6 py-3">
+                        <input
+                          type="text"
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          placeholder="Tambah catatan..."
+                          value={item.catatan}
+                          onChange={(e) => handleNoteChange(item.id, e.target.value)}
+                        />
                       </td>
                       <td className="px-6 py-3 text-center font-bold text-gray-900">
                         Rp {item.totalNilai.toLocaleString()}
