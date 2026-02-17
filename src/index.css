@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0F4C5C;
+  --color-primary-light: #1a6b7d;
+  --color-primary-dark: #0a3a47;
+
+  --color-accent: #A8DADC;
+  --color-accent-light: #d4f0f1;
+  --color-accent-dark: #7fbfc1;
+
+  --color-medical-white: #ffffff;
+  --color-medical-gray: #f3f4f6;
+  --color-medical-text: #1f2937;
+  --color-medical-muted: #6b7280;
+
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Define the CSS variables */
+:root {
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #0F4C5C;
+  --background: #ffffff;
+  --foreground: #1f2937;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+}
