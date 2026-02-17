@@ -10,30 +10,14 @@ import {
   AlertTriangle,
   XCircle
 } from 'lucide-react';
-import { endOfMonth, isWithinInterval, parseISO, isBefore } from 'date-fns';
+import { endOfYear, isBefore, parseISO, isWithinInterval } from 'date-fns';
 import * as XLSX from 'xlsx';
 
-export default function Rekap() {
+export default function RekapTahunan() {
   const { state } = useApp();
 
-  // Default to current month and year
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth().toString());
+  // Default to current year
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
-
-  const months = [
-    { value: '0', label: 'Januari' },
-    { value: '1', label: 'Februari' },
-    { value: '2', label: 'Maret' },
-    { value: '3', label: 'April' },
-    { value: '4', label: 'Mei' },
-    { value: '5', label: 'Juni' },
-    { value: '6', label: 'Juli' },
-    { value: '7', label: 'Agustus' },
-    { value: '8', label: 'September' },
-    { value: '9', label: 'Oktober' },
-    { value: '10', label: 'November' },
-    { value: '11', label: 'Desember' },
-  ];
 
   // Generate last 5 years
   const years = Array.from({ length: 5 }, (_, i) =>
@@ -42,13 +26,11 @@ export default function Rekap() {
 
   const recapData = useMemo(() => {
     const year = parseInt(selectedYear);
-    const month = parseInt(selectedMonth);
-
-    const startDate = new Date(year, month, 1);
-    const endDate = endOfMonth(startDate);
+    const startDate = new Date(year, 0, 1); // Jan 1st
+    const endDate = endOfYear(startDate);   // Dec 31st
 
     return state.drugs.map(drug => {
-      // Transactions before this month
+      // Transactions before this year
       const historyTransactions = state.transactions.filter(t =>
         t.drugId === drug.id &&
         isBefore(parseISO(t.date), startDate)
@@ -62,76 +44,72 @@ export default function Rekap() {
         .filter(t => t.type === 'pengeluaran')
         .reduce((sum, t) => sum + t.quantity, 0);
 
-      // Initial Stock for this month = Global Initial + History Net Change
-      const monthlyInitialStock = drug.stokAwal + historyIncoming - historyOutgoing;
+      // Initial Stock for this year
+      const yearlyInitialStock = drug.stokAwal + historyIncoming - historyOutgoing;
 
-      // Transactions within this month
-      const monthTransactions = state.transactions.filter(t =>
+      // Transactions within this year
+      const yearTransactions = state.transactions.filter(t =>
         t.drugId === drug.id &&
         isWithinInterval(parseISO(t.date), { start: startDate, end: endDate })
       );
 
-      const monthlyIncoming = monthTransactions
+      const yearlyIncoming = yearTransactions
         .filter(t => t.type === 'pemasukan')
         .reduce((sum, t) => sum + t.quantity, 0);
 
-      const monthlyOutgoing = monthTransactions
+      const yearlyOutgoing = yearTransactions
         .filter(t => t.type === 'pengeluaran')
         .reduce((sum, t) => sum + t.quantity, 0);
 
-      const availableStock = monthlyInitialStock + monthlyIncoming;
-      const finalStock = availableStock - monthlyOutgoing;
+      const finalStock = yearlyInitialStock + yearlyIncoming - yearlyOutgoing;
 
       return {
         id: drug.id,
         namaBarang: drug.namaBarang,
-        stokAwal: monthlyInitialStock,
-        penerimaan: monthlyIncoming,
-        jumlahPersediaan: availableStock,
-        pengeluaran: monthlyOutgoing,
+        stokAwalTahun: yearlyInitialStock,
+        totalMasuk: yearlyIncoming,
+        totalKeluar: yearlyOutgoing,
         stokAkhir: finalStock,
         totalNilai: finalStock * (drug.harga || 0)
       };
     });
-  }, [state.drugs, state.transactions, selectedMonth, selectedYear]);
+  }, [state.drugs, state.transactions, selectedYear]);
 
   const exportToExcel = () => {
     const dataToExport = recapData.map((item, index) => ({
       'No': index + 1,
       'Nama Barang': item.namaBarang,
-      'Stok Awal': item.stokAwal,
-      'Penerimaan': item.penerimaan,
-      'Jumlah Persediaan': item.jumlahPersediaan,
-      'Pengeluaran': item.pengeluaran,
+      'Stok Awal Tahun': item.stokAwalTahun,
+      'Total Masuk': item.totalMasuk,
+      'Total Keluar': item.totalKeluar,
       'Stok Akhir': item.stokAkhir,
       'Total Nilai': item.totalNilai
     }));
 
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Rekap Bulanan");
+    XLSX.utils.book_append_sheet(wb, ws, "Rekap Tahunan");
 
     // Auto-width columns
     const maxWidth = dataToExport.reduce((w, r) => Math.max(w, r['Nama Barang'].length), 10);
     ws['!cols'] = [
       { wch: 5 },  // No
       { wch: maxWidth + 2 }, // Nama Barang
-      { wch: 10 }, // Stok Awal
-      { wch: 10 }, // Penerimaan
-      { wch: 15 }, // Jumlah Persediaan
-      { wch: 10 }, // Pengeluaran
-      { wch: 10 }, // Stok Akhir
+      { wch: 15 }, // Stok Awal Tahun
+      { wch: 15 }, // Total Masuk
+      { wch: 15 }, // Total Keluar
+      { wch: 15 }, // Stok Akhir
       { wch: 15 }, // Total Nilai
     ];
 
-    const fileName = `Rekap_Stok_${months[parseInt(selectedMonth)].label}_${selectedYear}.xlsx`;
+    const fileName = `Rekap_Tahunan_${selectedYear}.xlsx`;
     XLSX.writeFile(wb, fileName);
   };
 
   return (
     <Layout
-      title="Rekapitulasi"
-      subtitle="Laporan bulanan persediaan obat"
+      title="Rekapitulasi Tahunan"
+      subtitle="Laporan tahunan persediaan obat"
       actions={
         <Button onClick={exportToExcel} className="flex items-center gap-2">
           <Download className="w-4 h-4" />
@@ -145,28 +123,17 @@ export default function Rekap() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">Periode:</span>
+                <span className="text-sm font-medium text-gray-700">Tahun:</span>
               </div>
-              <div className="flex gap-2">
-                <select
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                >
-                  {months.map(m => (
-                    <option key={m.value} value={m.value}>{m.label}</option>
-                  ))}
-                </select>
-                <select
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
-                >
-                  {years.map(y => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </select>
-              </div>
+              <select
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                {years.map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
             </div>
 
             <div className="text-sm text-gray-500">
@@ -180,10 +147,9 @@ export default function Rekap() {
                 <tr>
                   <th className="px-6 py-3 w-16">No</th>
                   <th className="px-6 py-3">Nama Barang</th>
-                  <th className="px-6 py-3 text-center">Stok Awal</th>
-                  <th className="px-6 py-3 text-center text-green-600">Penerimaan</th>
-                  <th className="px-6 py-3 text-center font-bold">Jumlah Persediaan</th>
-                  <th className="px-6 py-3 text-center text-red-600">Pengeluaran</th>
+                  <th className="px-6 py-3 text-center">Stok Awal Tahun</th>
+                  <th className="px-6 py-3 text-center text-green-600">Total Masuk</th>
+                  <th className="px-6 py-3 text-center text-red-600">Total Keluar</th>
                   <th className="px-6 py-3 text-center font-bold">Stok Akhir</th>
                   <th className="px-6 py-3 text-center font-bold">Total Nilai</th>
                 </tr>
@@ -194,7 +160,7 @@ export default function Rekap() {
                     <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                       <div className="flex flex-col items-center justify-center p-6">
                         <FileText className="w-12 h-12 text-gray-300 mb-2" />
-                        <p>Tidak ada data untuk periode ini</p>
+                        <p>Tidak ada data untuk tahun ini</p>
                       </div>
                     </td>
                   </tr>
@@ -206,16 +172,13 @@ export default function Rekap() {
                         {item.namaBarang}
                       </td>
                       <td className="px-6 py-3 text-center text-gray-600">
-                        {item.stokAwal}
+                        {item.stokAwalTahun}
                       </td>
                       <td className="px-6 py-3 text-center text-green-600 font-medium bg-green-50">
-                        {item.penerimaan > 0 ? `+${item.penerimaan}` : '-'}
-                      </td>
-                      <td className="px-6 py-3 text-center font-bold text-gray-900 bg-gray-50">
-                        {item.jumlahPersediaan}
+                        {item.totalMasuk > 0 ? `+${item.totalMasuk}` : '-'}
                       </td>
                       <td className="px-6 py-3 text-center text-red-600 font-medium bg-red-50">
-                        {item.pengeluaran > 0 ? `-${item.pengeluaran}` : '-'}
+                        {item.totalKeluar > 0 ? `-${item.totalKeluar}` : '-'}
                       </td>
                       <td className="px-6 py-3 text-center font-bold text-gray-900">
                         {item.stokAkhir}

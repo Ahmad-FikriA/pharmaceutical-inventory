@@ -6,6 +6,7 @@ import {
   ArrowUpRight,
   FileText,
   Pill,
+  Calendar,
 } from 'lucide-react';
 
 const menuItems = [
@@ -14,6 +15,7 @@ const menuItems = [
   { path: '/pemasukan', label: 'Pemasukan', icon: ArrowDownLeft },
   { path: '/pengeluaran', label: 'Pengeluaran', icon: ArrowUpRight },
   { path: '/rekap', label: 'Rekap Bulanan', icon: FileText },
+  { path: '/rekap-tahunan', label: 'Rekap Tahunan', icon: Calendar },
 ];
 
 export default function Sidebar() {

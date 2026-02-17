@@ -20,6 +20,8 @@ export default function Pengeluaran() {
   const [formData, setFormData] = useState({
     drugId: '',
     quantity: '',
+    batchNumber: '',
+    satuan: '',
     date: new Date().toISOString().split('T')[0],
     destination: '',
     notes: ''
@@ -42,6 +44,8 @@ export default function Pengeluaran() {
     setFormData({
       drugId: '',
       quantity: '',
+      batchNumber: '',
+      satuan: '',
       date: new Date().toISOString().split('T')[0],
       destination: '',
       notes: ''
@@ -71,6 +75,18 @@ export default function Pengeluaran() {
       return;
     }
 
+    if (!formData.batchNumber) {
+      dispatch({
+        type: 'ADD_TOAST',
+        payload: {
+          id: Date.now().toString(),
+          type: 'error',
+          message: 'Nomor Batch wajib diisi'
+        }
+      });
+      return;
+    }
+
     const qty = parseInt(formData.quantity);
     const currentStock = calculateStock(drug.id);
 
@@ -91,7 +107,9 @@ export default function Pengeluaran() {
       drugId: drug.id,
       drugName: drug.namaBarang,
       type: 'pengeluaran' as const,
+      satuan: drug.satuan,
       quantity: qty,
+      batchNumber: formData.batchNumber,
       date: formData.date,
       destination: formData.destination,
       notes: formData.notes,
@@ -165,6 +183,8 @@ export default function Pengeluaran() {
                 <tr>
                   <th className="px-6 py-3">Tanggal</th>
                   <th className="px-6 py-3">Nama Barang</th>
+                  <th className="px-6 py-3">Satuan</th>
+                  <th className="px-6 py-3">No. Batch</th>
                   <th className="px-6 py-3">Tujuan</th>
                   <th className="px-6 py-3">Jumlah</th>
                   <th className="px-6 py-3">Keterangan</th>
@@ -189,6 +209,12 @@ export default function Pengeluaran() {
                       </td>
                       <td className="px-6 py-3 font-medium text-gray-900">
                         {t.drugName}
+                      </td>
+                      <td className="px-6 py-3 text-gray-600">
+                        {t.satuan || '-'}
+                      </td>
+                      <td className="px-6 py-3 text-gray-600">
+                        {t.batchNumber || '-'}
                       </td>
                       <td className="px-6 py-3 text-gray-600">
                         {t.destination || '-'}
@@ -217,8 +243,8 @@ export default function Pengeluaran() {
         </Card>
 
         {isOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full overflow-hidden animate-in zoom-in-95 fade-in duration-200">
               <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                 <h3 className="font-semibold text-gray-900">Tambah Pengeluaran</h3>
                 <button 
@@ -237,7 +263,14 @@ export default function Pengeluaran() {
                   <select
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
                     value={formData.drugId}
-                    onChange={(e) => setFormData({ ...formData, drugId: e.target.value })}
+                    onChange={(e) => {
+                      const selectedDrug = state.drugs.find((d) => d.id === e.target.value);
+                      setFormData({
+                        ...formData,
+                        drugId: e.target.value,
+                        satuan: selectedDrug?.satuan || '',
+                      });
+                    }}
                     required
                   >
                     <option value="">Pilih Obat</option>
@@ -247,6 +280,19 @@ export default function Pengeluaran() {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Satuan
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.satuan}
+                    readOnly
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                    placeholder="Otomatis dari data obat"
+                  />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -260,6 +306,19 @@ export default function Pengeluaran() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       value={formData.quantity}
                       onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nomor Batch <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      value={formData.batchNumber}
+                      onChange={(e) => setFormData({ ...formData, batchNumber: e.target.value })}
                       required
                     />
                   </div>

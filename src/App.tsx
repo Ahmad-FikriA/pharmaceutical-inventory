@@ -6,6 +6,7 @@ import MasterData from './pages/MasterData';
 import Pemasukan from './pages/Pemasukan';
 import Pengeluaran from './pages/Pengeluaran';
 import Rekap from './pages/Rekap';
+import RekapTahunan from './pages/RekapTahunan';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/pemasukan" element={<Pemasukan />} />
           <Route path="/pengeluaran" element={<Pengeluaran />} />
           <Route path="/rekap" element={<Rekap />} />
+          <Route path="/rekap-tahunan" element={<RekapTahunan />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>

@@ -18,6 +18,7 @@ import {
   getJumlahPersediaan,
   getStokAkhir,
   generateId,
+  formatCurrency,
 } from '../utils/helpers';
 import { Drug, DrugFormData } from '../types';
 
@@ -33,6 +34,8 @@ export default function MasterData() {
   const [formData, setFormData] = useState<DrugFormData>({
     namaBarang: '',
     stokAwal: 0,
+    satuan: '',
+    harga: 0,
   });
   const [errors, setErrors] = useState<Partial<Record<keyof DrugFormData, string>>>(
     {}
@@ -61,6 +64,14 @@ export default function MasterData() {
       newErrors.stokAwal = 'Stok awal tidak boleh negatif';
     }
 
+    if (!formData.satuan.trim()) {
+      newErrors.satuan = 'Satuan wajib diisi';
+    }
+
+    if (formData.harga < 0) {
+      newErrors.harga = 'Harga tidak boleh negatif';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -77,6 +88,8 @@ export default function MasterData() {
           ...editingDrug,
           namaBarang: formData.namaBarang,
           stokAwal: formData.stokAwal,
+          satuan: formData.satuan,
+          harga: formData.harga,
           updatedAt: new Date().toISOString(),
         },
       });
@@ -86,6 +99,9 @@ export default function MasterData() {
         id: generateId(),
         namaBarang: formData.namaBarang,
         stokAwal: formData.stokAwal,
+        satuan: formData.satuan,
+        harga: formData.harga,
+
         penerimaan: 0,
         pengeluaran: 0,
         createdAt: new Date().toISOString(),
@@ -103,6 +119,8 @@ export default function MasterData() {
     setFormData({
       namaBarang: drug.namaBarang,
       stokAwal: drug.stokAwal,
+      satuan: drug.satuan,
+      harga: drug.harga,
     });
     setIsModalOpen(true);
   };
@@ -120,7 +138,7 @@ export default function MasterData() {
 
   const handleOpenModal = () => {
     setEditingDrug(null);
-    setFormData({ namaBarang: '', stokAwal: 0 });
+    setFormData({ namaBarang: '', stokAwal: 0, satuan: '', harga: 0 });
     setErrors({});
     setIsModalOpen(true);
   };
@@ -128,7 +146,7 @@ export default function MasterData() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingDrug(null);
-    setFormData({ namaBarang: '', stokAwal: 0 });
+    setFormData({ namaBarang: '', stokAwal: 0, satuan: '', harga: 0 });
     setErrors({});
   };
 
@@ -170,6 +188,12 @@ export default function MasterData() {
                   Nama Barang
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Satuan
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Harga
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Stok Awal
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -203,6 +227,12 @@ export default function MasterData() {
                           {drug.namaBarang}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {drug.satuan}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatCurrency(drug.harga)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {drug.stokAwal}
@@ -263,7 +293,7 @@ export default function MasterData() {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full animate-in zoom-in-95 fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full animate-in zoom-in-95 fade-in duration-200">
             <div className="p-6 border-b border-gray-100">
               <h2 className="text-lg font-semibold text-gray-900">
                 {editingDrug ? 'Edit Data Obat' : 'Tambah Data Obat'}
@@ -298,7 +328,7 @@ export default function MasterData() {
                 <input
                   type="number"
                   min="0"
-                  value={formData.stokAwal}
+                  value={formData.stokAwal || ''}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -312,6 +342,67 @@ export default function MasterData() {
                 {errors.stokAwal && (
                   <p className="mt-1 text-sm text-red-600">{errors.stokAwal}</p>
                 )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Satuan
+                  </label>
+                  <select
+                    value={formData.satuan}
+                    onChange={(e) =>
+                      setFormData({ ...formData, satuan: e.target.value })
+                    }
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
+                      errors.satuan ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  >
+                    <option value="">Pilih Satuan</option>
+                    {[
+                      'Tablet',
+                      'Kapsul',
+                      'Botol',
+                      'Pcs',
+                      'Pak',
+                      'Pasang',
+                      'Box',
+                      'Suppositoria',
+                      'Vial',
+                      'Ampul',
+                    ].map((satuan) => (
+                      <option key={satuan} value={satuan}>
+                        {satuan}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.satuan && (
+                    <p className="mt-1 text-sm text-red-600">{errors.satuan}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Harga
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.harga || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        harga: parseInt(e.target.value) || 0,
+                      })
+                    }
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
+                      errors.harga ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {errors.harga && (
+                    <p className="mt-1 text-sm text-red-600">{errors.harga}</p>
+                  )}
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4">

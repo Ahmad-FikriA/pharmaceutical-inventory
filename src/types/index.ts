@@ -6,11 +6,15 @@ export interface Drug {
   pengeluaran: number;
   createdAt: string;
   updatedAt: string;
+  satuan: string;
+  harga: number;
 }
 
 export interface DrugFormData {
   namaBarang: string;
   stokAwal: number;
+  satuan: string;
+  harga: number;
 }
 
 export type TransactionType = 'pemasukan' | 'pengeluaran';
@@ -21,6 +25,10 @@ export interface Transaction {
   drugName: string;
   type: TransactionType;
   quantity: number;
+  batchNumber?: string;
+  expiryDate?: string;
+  price?: number;
+  satuan?: string;
   date: string;
   source?: string;
   destination?: string;
@@ -31,6 +39,10 @@ export interface Transaction {
 export interface TransactionFormData {
   drugId: string;
   quantity: number;
+  batchNumber: string;
+  expiryDate: string;
+  price: number;
+  satuan: string;
   date: string;
   source?: string;
   destination?: string;

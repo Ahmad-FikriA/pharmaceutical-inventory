@@ -34,6 +34,10 @@ export default function Pemasukan() {
   const [formData, setFormData] = useState<TransactionFormData>({
     drugId: '',
     quantity: 0,
+    batchNumber: '',
+    expiryDate: '',
+    price: 0,
+    satuan: '',
     date: new Date().toISOString().split('T')[0],
     source: '',
     notes: '',
@@ -57,6 +61,18 @@ export default function Pemasukan() {
 
     if (!formData.drugId) {
       newErrors.drugId = 'Pilih nama obat';
+    }
+
+    if (!formData.batchNumber) {
+      newErrors.batchNumber = 'Nomor Batch wajib diisi';
+    }
+
+    if (!formData.expiryDate) {
+      newErrors.expiryDate = 'Tanggal Expire wajib diisi';
+    }
+
+    if (formData.price < 0) {
+      newErrors.price = 'Harga tidak boleh negatif';
     }
 
     const quantityError = validateQuantity(formData.quantity);
@@ -89,6 +105,10 @@ export default function Pemasukan() {
       drugName: drug.namaBarang,
       type: 'pemasukan',
       quantity: formData.quantity,
+      batchNumber: formData.batchNumber,
+      expiryDate: formData.expiryDate,
+      price: formData.price,
+      satuan: formData.satuan,
       date: formData.date,
       source: formData.source,
       notes: formData.notes,
@@ -115,6 +135,10 @@ export default function Pemasukan() {
     setFormData({
       drugId: '',
       quantity: 0,
+      batchNumber: '',
+      expiryDate: '',
+      price: 0,
+      satuan: '',
       date: new Date().toISOString().split('T')[0],
       source: '',
       notes: '',
@@ -169,6 +193,18 @@ export default function Pemasukan() {
                   Nama Barang
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Satuan
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nomor Batch
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Expire
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Harga Beli
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Jumlah
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -204,6 +240,18 @@ export default function Pemasukan() {
                           {transaction.drugName}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {transaction.satuan || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {transaction.batchNumber || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {transaction.expiryDate ? formatDate(transaction.expiryDate) : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      Rp {transaction.price?.toLocaleString() || '0'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -246,7 +294,7 @@ export default function Pemasukan() {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full animate-in zoom-in-95 fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full animate-in zoom-in-95 fade-in duration-200">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -270,9 +318,14 @@ export default function Pemasukan() {
                 </label>
                 <select
                   value={formData.drugId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, drugId: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const selectedDrug = state.drugs.find((d) => d.id === e.target.value);
+                    setFormData({
+                      ...formData,
+                      drugId: e.target.value,
+                      satuan: selectedDrug?.satuan || '',
+                    });
+                  }}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
                     errors.drugId ? 'border-red-500' : 'border-gray-300'
                   }`}
@@ -292,12 +345,90 @@ export default function Pemasukan() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nomor Batch *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.batchNumber}
+                    onChange={(e) =>
+                      setFormData({ ...formData, batchNumber: e.target.value })
+                    }
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
+                      errors.batchNumber ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {errors.batchNumber && (
+                    <p className="mt-1 text-sm text-red-600">{errors.batchNumber}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Expired Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.expiryDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, expiryDate: e.target.value })
+                    }
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
+                      errors.expiryDate ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {errors.expiryDate && (
+                    <p className="mt-1 text-sm text-red-600">{errors.expiryDate}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Harga Beli *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.price || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        price: parseInt(e.target.value) || 0,
+                      })
+                    }
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
+                      errors.price ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {errors.price && (
+                    <p className="mt-1 text-sm text-red-600">{errors.price}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Satuan
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.satuan}
+                    readOnly
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                    placeholder="Otomatis dari data obat"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Jumlah *
                   </label>
                   <input
                     type="number"
                     min="1"
-                    value={formData.quantity}
+                    value={formData.quantity || ''}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
