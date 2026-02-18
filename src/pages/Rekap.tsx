@@ -96,7 +96,6 @@ export default function Rekap() {
         stokAkhir: finalStock,
         stokOptimum,
         catatan: state.recapNotes?.[`${drug.id}-${selectedMonth}-${selectedYear}`] || '',
-        totalNilai: finalStock * (drug.harga || 0)
       };
     });
   }, [state.drugs, state.transactions, selectedMonth, selectedYear, state.recapNotes]);
@@ -112,12 +111,11 @@ export default function Rekap() {
       'Stok Akhir': item.stokAkhir,
       'Stok Optimum': item.stokOptimum,
       'Catatan': item.catatan,
-      'Total Nilai': item.totalNilai
     }));
 
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Rekap Bulanan");
+    XLSX.utils.book_append_sheet(wb, ws, "LPLPO");
 
     // Auto-width columns
     const maxWidth = dataToExport.reduce((w, r) => Math.max(w, r['Nama Barang'].length), 10);
@@ -131,10 +129,9 @@ export default function Rekap() {
       { wch: 10 }, // Stok Akhir
       { wch: 10 }, // Stok Optimum
       { wch: 30 }, // Catatan
-      { wch: 15 }, // Total Nilai
     ];
 
-    const fileName = `Rekap_Stok_${months[parseInt(selectedMonth)].label}_${selectedYear}.xlsx`;
+    const fileName = `LPLPO_${months[parseInt(selectedMonth)].label}_${selectedYear}.xlsx`;
     XLSX.writeFile(wb, fileName);
   };
 
@@ -150,8 +147,8 @@ export default function Rekap() {
 
   return (
     <Layout
-      title="Rekapitulasi"
-      subtitle="Laporan bulanan persediaan obat"
+      title="LPLPO"
+      subtitle="Laporan Pemakaian dan Lembar Permintaan Obat"
       actions={
         <Button onClick={exportToExcel} className="flex items-center gap-2">
           <Download className="w-4 h-4" />
@@ -207,13 +204,12 @@ export default function Rekap() {
                   <th className="px-6 py-3 text-center font-bold">Stok Akhir</th>
                   <th className="px-6 py-3 text-center text-blue-600">Stok Optimum</th>
                   <th className="px-6 py-3 text-center">Catatan</th>
-                  <th className="px-6 py-3 text-center font-bold">Total Nilai</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {recapData.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
                       <div className="flex flex-col items-center justify-center p-6">
                         <FileText className="w-12 h-12 text-gray-300 mb-2" />
                         <p>Tidak ada data untuk periode ini</p>
@@ -259,9 +255,6 @@ export default function Rekap() {
                           value={item.catatan}
                           onChange={(e) => handleNoteChange(item.id, e.target.value)}
                         />
-                      </td>
-                      <td className="px-6 py-3 text-center font-bold text-gray-900">
-                        Rp {item.totalNilai.toLocaleString()}
                       </td>
                     </tr>
                   ))

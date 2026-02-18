@@ -7,6 +7,8 @@ import Pemasukan from './pages/Pemasukan';
 import Pengeluaran from './pages/Pengeluaran';
 import Rekap from './pages/Rekap';
 import RekapTahunan from './pages/RekapTahunan';
+import KartuStok from './pages/KartuStok';
+import RekapSubunit from './pages/RekapSubunit';
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
           <Route path="/pengeluaran" element={<Pengeluaran />} />
           <Route path="/rekap" element={<Rekap />} />
           <Route path="/rekap-tahunan" element={<RekapTahunan />} />
+          <Route path="/kartu-stok" element={<KartuStok />} />
+          <Route path="/rekap-subunit" element={<RekapSubunit />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>

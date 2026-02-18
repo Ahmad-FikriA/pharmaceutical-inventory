@@ -7,6 +7,8 @@ import {
   FileText,
   Pill,
   Calendar,
+  ClipboardList,
+  Building2,
 } from 'lucide-react';
 
 const menuItems = [
@@ -14,7 +16,9 @@ const menuItems = [
   { path: '/master-data', label: 'Master Data', icon: Package },
   { path: '/pemasukan', label: 'Pemasukan', icon: ArrowDownLeft },
   { path: '/pengeluaran', label: 'Pengeluaran', icon: ArrowUpRight },
-  { path: '/rekap', label: 'Rekap Bulanan', icon: FileText },
+  { path: '/rekap', label: 'LPLPO', icon: FileText },
+  { path: '/kartu-stok', label: 'Kartu Stok', icon: ClipboardList },
+  { path: '/rekap-subunit', label: 'Rekap Subunit', icon: Building2 },
   { path: '/rekap-tahunan', label: 'Rekap Tahunan', icon: Calendar },
 ];
 
