@@ -89,6 +89,7 @@ export default function Rekap() {
       return {
         id: drug.id,
         namaBarang: drug.namaBarang,
+        satuan: drug.satuan,
         stokAwal: monthlyInitialStock,
         penerimaan: monthlyIncoming,
         jumlahPersediaan: availableStock,
@@ -104,13 +105,14 @@ export default function Rekap() {
     const dataToExport = recapData.map((item, index) => ({
       'No': index + 1,
       'Nama Barang': item.namaBarang,
+      'Satuan': item.satuan,
       'Stok Awal': item.stokAwal,
       'Penerimaan': item.penerimaan,
       'Jumlah Persediaan': item.jumlahPersediaan,
       'Pengeluaran': item.pengeluaran,
       'Stok Akhir': item.stokAkhir,
       'Stok Optimum': item.stokOptimum,
-      'Catatan': item.catatan,
+      'Jumlah Permintaan': item.catatan,
     }));
 
     const ws = XLSX.utils.json_to_sheet(dataToExport);
@@ -122,13 +124,14 @@ export default function Rekap() {
     ws['!cols'] = [
       { wch: 5 },  // No
       { wch: maxWidth + 2 }, // Nama Barang
+      { wch: 10 }, // Satuan
       { wch: 10 }, // Stok Awal
       { wch: 10 }, // Penerimaan
       { wch: 15 }, // Jumlah Persediaan
       { wch: 10 }, // Pengeluaran
       { wch: 10 }, // Stok Akhir
       { wch: 10 }, // Stok Optimum
-      { wch: 30 }, // Catatan
+      { wch: 30 }, // Jumlah Permintaan
     ];
 
     const fileName = `LPLPO_${months[parseInt(selectedMonth)].label}_${selectedYear}.xlsx`;
@@ -197,19 +200,20 @@ export default function Rekap() {
                 <tr>
                   <th className="px-6 py-3 w-16">No</th>
                   <th className="px-6 py-3">Nama Barang</th>
+                  <th className="px-6 py-3 text-center">Satuan</th>
                   <th className="px-6 py-3 text-center">Stok Awal</th>
                   <th className="px-6 py-3 text-center text-green-600">Penerimaan</th>
                   <th className="px-6 py-3 text-center font-bold">Jumlah Persediaan</th>
                   <th className="px-6 py-3 text-center text-red-600">Pengeluaran</th>
                   <th className="px-6 py-3 text-center font-bold">Stok Akhir</th>
                   <th className="px-6 py-3 text-center text-blue-600">Stok Optimum</th>
-                  <th className="px-6 py-3 text-center">Catatan</th>
+                  <th className="px-6 py-3 text-center">Jumlah Permintaan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {recapData.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={10} className="px-6 py-8 text-center text-gray-500">
                       <div className="flex flex-col items-center justify-center p-6">
                         <FileText className="w-12 h-12 text-gray-300 mb-2" />
                         <p>Tidak ada data untuk periode ini</p>
@@ -222,6 +226,9 @@ export default function Rekap() {
                       <td className="px-6 py-3 text-gray-500">{index + 1}</td>
                       <td className="px-6 py-3 font-medium text-gray-900">
                         {item.namaBarang}
+                      </td>
+                      <td className="px-6 py-3 text-center text-gray-600">
+                        {item.satuan}
                       </td>
                       <td className="px-6 py-3 text-center text-gray-600">
                         {item.stokAwal}
@@ -251,7 +258,7 @@ export default function Rekap() {
                         <input
                           type="text"
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
-                          placeholder="Tambah catatan..."
+                          placeholder="Jumlah Permintaan..."
                           value={item.catatan}
                           onChange={(e) => handleNoteChange(item.id, e.target.value)}
                         />

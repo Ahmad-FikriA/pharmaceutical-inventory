@@ -66,6 +66,7 @@ export default function RekapTahunan() {
       return {
         id: drug.id,
         namaBarang: drug.namaBarang,
+        satuan: drug.satuan,
         stokAwalTahun: yearlyInitialStock,
         totalMasuk: yearlyIncoming,
         totalKeluar: yearlyOutgoing,
@@ -79,6 +80,7 @@ export default function RekapTahunan() {
     const dataToExport = recapData.map((item, index) => ({
       'No': index + 1,
       'Nama Barang': item.namaBarang,
+      'Satuan': item.satuan,
       'Stok Awal Tahun': item.stokAwalTahun,
       'Total Masuk': item.totalMasuk,
       'Total Keluar': item.totalKeluar,
@@ -95,6 +97,7 @@ export default function RekapTahunan() {
     ws['!cols'] = [
       { wch: 5 },  // No
       { wch: maxWidth + 2 }, // Nama Barang
+      { wch: 10 }, // Satuan
       { wch: 15 }, // Stok Awal Tahun
       { wch: 15 }, // Total Masuk
       { wch: 15 }, // Total Keluar
@@ -147,6 +150,7 @@ export default function RekapTahunan() {
                 <tr>
                   <th className="px-6 py-3 w-16">No</th>
                   <th className="px-6 py-3">Nama Barang</th>
+                  <th className="px-6 py-3 text-center">Satuan</th>
                   <th className="px-6 py-3 text-center">Stok Awal Tahun</th>
                   <th className="px-6 py-3 text-center text-green-600">Total Masuk</th>
                   <th className="px-6 py-3 text-center text-red-600">Total Keluar</th>
@@ -157,7 +161,7 @@ export default function RekapTahunan() {
               <tbody className="divide-y divide-gray-200">
                 {recapData.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                       <div className="flex flex-col items-center justify-center p-6">
                         <FileText className="w-12 h-12 text-gray-300 mb-2" />
                         <p>Tidak ada data untuk tahun ini</p>
@@ -170,6 +174,9 @@ export default function RekapTahunan() {
                       <td className="px-6 py-3 text-gray-500">{index + 1}</td>
                       <td className="px-6 py-3 font-medium text-gray-900">
                         {item.namaBarang}
+                      </td>
+                      <td className="px-6 py-3 text-center text-gray-600">
+                        {item.satuan}
                       </td>
                       <td className="px-6 py-3 text-center text-gray-600">
                         {item.stokAwalTahun}
